@@ -1,0 +1,564 @@
+[
+  {
+    "id": "table.ProductImage",
+    "label": "Create table \"ProductImage\"",
+    "summary": "Creates table \"ProductImage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ProductImage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ProductImage\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProductImage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ProductImage\"",
+        "sql": "CREATE TABLE \"public\".\"ProductImage\" (\n  \"id\" text NOT NULL,\n  \"productId\" text NOT NULL,\n  \"url\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ProductImage\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProductImage\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Review",
+    "label": "Create table \"Review\"",
+    "summary": "Creates table \"Review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Review\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Review\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Review\"",
+        "sql": "CREATE TABLE \"public\".\"Review\" (\n  \"comment\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"productId\" text NOT NULL,\n  \"reviewerName\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Review\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Review\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Product.externalId",
+    "label": "Add column \"externalId\" to \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "externalId",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"externalId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "externalId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"externalId\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ADD COLUMN \"externalId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"externalId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "externalId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Product.brand",
+    "label": "Add column \"brand\" to \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "brand",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"brand\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "brand"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"brand\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ADD COLUMN \"brand\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"brand\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "brand"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-Product-brand",
+    "label": "Data transform: backfill-Product-brand",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-Product-brand has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"Product\" WHERE \"brand\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-Product-brand",
+        "sql": "UPDATE \"public\".\"Product\" SET \"brand\" = $1 WHERE \"brand\" IS NULL",
+        "params": [
+          "Unknown"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-Product-brand resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"Product\" WHERE \"brand\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.Product.brand",
+    "label": "Set NOT NULL on \"Product\".\"brand\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "brand",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"brand\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "brand"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"brand\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"Product\" WHERE \"brand\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"brand\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ALTER COLUMN \"brand\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"brand\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "brand",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Product.Product_externalId_key",
+    "label": "Add unique constraint on \"Product\" (externalId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Product_externalId_key",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Product_externalId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Product_externalId_key",
+          "public",
+          "\"public\".\"Product\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Product_externalId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ADD CONSTRAINT \"Product_externalId_key\" UNIQUE (\"externalId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Product_externalId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Product_externalId_key",
+          "public",
+          "\"public\".\"Product\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ProductImage.ProductImage_productId_idx_5858600a",
+    "label": "Create index \"ProductImage_productId_idx_5858600a\" on \"ProductImage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ProductImage_productId_idx_5858600a",
+        "table": "ProductImage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ProductImage_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProductImage_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ProductImage_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"ProductImage_productId_idx_5858600a\" ON \"public\".\"ProductImage\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ProductImage_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProductImage_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Review.Review_productId_idx_5858600a",
+    "label": "Create index \"Review_productId_idx_5858600a\" on \"Review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Review_productId_idx_5858600a",
+        "table": "Review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Review_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Review_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Review_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"Review_productId_idx_5858600a\" ON \"public\".\"Review\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Review_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Review_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ProductImage.ProductImage_productId_fkey",
+    "label": "Add foreign key \"ProductImage_productId_fkey\" on \"ProductImage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ProductImage_productId_fkey",
+        "table": "ProductImage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ProductImage_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProductImage_productId_fkey",
+          "public",
+          "\"public\".\"ProductImage\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ProductImage_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ProductImage\"\nADD CONSTRAINT \"ProductImage_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"Product\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ProductImage_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProductImage_productId_fkey",
+          "public",
+          "\"public\".\"ProductImage\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Review.Review_productId_fkey",
+    "label": "Add foreign key \"Review_productId_fkey\" on \"Review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Review_productId_fkey",
+        "table": "Review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Review_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Review_productId_fkey",
+          "public",
+          "\"public\".\"Review\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Review_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Review\"\nADD CONSTRAINT \"Review_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"Product\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Review_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Review_productId_fkey",
+          "public",
+          "\"public\".\"Review\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.Category",
+    "label": "Enable row-level security on \"Category\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "Category"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"Category\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Category"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"Category\"",
+        "sql": "ALTER TABLE \"public\".\"Category\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"Category\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "Category"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.ProductImage",
+    "label": "Enable row-level security on \"ProductImage\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "ProductImage"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"ProductImage\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "ProductImage"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"ProductImage\"",
+        "sql": "ALTER TABLE \"public\".\"ProductImage\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"ProductImage\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "ProductImage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.Review",
+    "label": "Enable row-level security on \"Review\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "Review"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"Review\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Review"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"Review\"",
+        "sql": "ALTER TABLE \"public\".\"Review\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"Review\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "Review"
+        ]
+      }
+    ]
+  }
+]
