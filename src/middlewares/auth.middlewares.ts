@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: number; role: string };
+      user?: { id: string; role: string };
     }
   }
 }
@@ -29,7 +29,7 @@ if(!token){
     });
   }
 try {
-    const decode=jwt.verify(token,jwtSecret) as {id:number,role:string};
+    const decode=jwt.verify(token,jwtSecret) as {id:string,role:string};
 
     req.user=decode;
     
@@ -46,3 +46,4 @@ try {
 
 
 }
+

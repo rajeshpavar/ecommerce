@@ -17,6 +17,7 @@ export const productSchema = z.array(
 })
 );
 export const addProductSchema=z.object({
+  id:z.number().optional(),
       brand:z.string().default("Unknown"),
   title       :z.string(),
   description :z.string(),
