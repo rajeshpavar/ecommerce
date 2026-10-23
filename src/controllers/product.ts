@@ -133,26 +133,26 @@ else{
 
      const dataProduct= await db.orm.public.Product.upsert({
         create:{
-          externalId: product.id,
+          externalId:product.id,
       title: product.title,
       description: product.description,
-      categoryId: category.id,
-      price: product.price,
-      stock: product.stock,
+      categoryId: String(category.id),
+      price: Number(product.price),
+      stock: Number(product.stock),
       brand: product.brand,
       
         },
         update: {
       title: product.title,
       description: product.description,
-      categoryId: category.id,
-      price: product.price,
-      stock: product.stock,
+      categoryId: String(category.id),
+      price: Number(product.price),
+      stock: Number(product.stock),
       brand: product.brand,
       
     },
     conflictOn:{
-      externalId:product.id
+      externalId:String(product.id)
     }
       })
 
