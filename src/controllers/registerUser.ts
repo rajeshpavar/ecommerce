@@ -55,7 +55,7 @@ try {
 
    const token=jwt.sign({id:newUser.id,role:newUser.role},jwtScerete,{expiresIn:"24h"})
   
-   res.cookie("token",token,{httpOnly:true})
+   res.cookie("token",token,{httpOnly:true,secure:false})
 
    res.status(201).json({
     sucess:true,
@@ -115,7 +115,7 @@ try {
 
     const token=jwt.sign({id:existingUser.id,role:existingUser.role},jwtScerete,{expiresIn:'24h'});
     
-     res.cookie('token',token,{httpOnly:true})
+     res.cookie('token',token,{httpOnly:true,secure:false})
 
      res.status(200).json({
         success:true,
