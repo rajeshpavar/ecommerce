@@ -133,11 +133,11 @@ else{
 
      const dataProduct= await db.orm.public.Product.upsert({
         create:{
-          externalId:product.id,
+          externalId:product.id ?? null,
       title: product.title,
       description: product.description,
       categoryId: String(category.id),
-      price: Number(product.price),
+      price: String(product.price),
       stock: Number(product.stock),
       brand: product.brand,
       
@@ -146,13 +146,13 @@ else{
       title: product.title,
       description: product.description,
       categoryId: String(category.id),
-      price: Number(product.price),
+      price: String(product.price),
       stock: Number(product.stock),
       brand: product.brand,
       
     },
     conflictOn:{
-      externalId:String(product.id)
+      externalId:product.id ?? null
     }
       })
 
@@ -199,12 +199,12 @@ else{
 
 export async function getProduct(req:Request,res:Response,next:NextFunction){
 
-  const id=req.params.id;
+  const id=String(req.params.id);
 
   try {
     
     const data=await db.orm.public.Product.first({
-       id:id
+       id
     })
 
     if(!data){
@@ -239,9 +239,9 @@ export async function updateProduct(req:Request,res:Response,next:NextFunction){
   }
 
   try {
-    const id=req.params.id;
+    const id=String(req.params.id);
     const products=await db.orm.public.Product.first({
-      id:id
+      id
     })
 
     const body=req.body;
@@ -273,12 +273,12 @@ export async function updateProduct(req:Request,res:Response,next:NextFunction){
 }
 
 export async function deleteProduct(req:Request,res:Response,next:NextFunction) {
-  const id=req.params.id;
+  const id=String(req.params.id);
 
 
   try {
 
-    const deleteProduct=await db.orm.public.Product.where({id:id}).delete()
+    const deleteProduct=await db.orm.public.Product.where({id}).delete()
     if(!deleteProduct){
       return res.status(400).json({
         success:false,

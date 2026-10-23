@@ -27,7 +27,7 @@ export const addProductSchema=z.object({
   ).optional(),
   images: z.array(z.string()).optional(), 
 
-  price       :z.number().refine(num=>{
+  price       :z.string().refine(num=>{
     const splitNum=num.toString().split(".");
 
    return splitNum.length===2&& splitNum[1].length===2
