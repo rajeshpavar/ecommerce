@@ -1,8 +1,8 @@
 import type { NextFunction, Request,Response } from "express";
-import {  addProductSchema, productSchema } from "../Vailidation/ProductSchema";
-import { errorHandler } from "../middlewares/errorHandler";
-import { db } from "../prisma/db";
-import { fetchProducts } from "../Services/fetchProducts";
+import {  addProductSchema, productSchema } from "../Vailidation/ProductSchema.js";
+
+import { db } from "../prisma/db.js";
+import { fetchProducts } from "../Services/fetchProducts.js";
 
 
 const categoryMap: Record<string,

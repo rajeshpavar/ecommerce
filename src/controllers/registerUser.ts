@@ -1,10 +1,10 @@
 import type { Request, Response ,NextFunction} from "express";
-import { loginSchema, signupSchema } from "../Vailidation/RegisterSchema";
-import { db } from "../prisma/db";
+import { loginSchema, signupSchema } from "../Vailidation/RegisterSchema.js";
+import { db } from "../prisma/db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { findUserByEmail } from "../Services/userService";
+import { findUserByEmail } from "../Services/userService.js";
 
 
 
